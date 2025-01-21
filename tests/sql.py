@@ -1,3 +1,3 @@
 import dbcluster
 
-print(dbcluster.sql("SELECT * FROM users;"))
+print(dbcluster.sql_dynamic("SELECT * FROM users;"))

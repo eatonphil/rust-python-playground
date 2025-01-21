@@ -3,6 +3,7 @@ use std::ffi::CString;
 use std::fs;
 
 use pyo3::prelude::*;
+use pyo3::IntoPyObjectExt;
 
 fn string_to_c_str(s: &String) -> CString {
     CString::new(s.as_str()).unwrap()
@@ -22,9 +23,27 @@ fn sql(_sql_string: String) -> Vec<HashMap<String, String>> {
     ]
 }
 
+#[pyfunction]
+fn sql_dynamic(_sql_string: String) -> PyResult<PyObject> {
+    Python::with_gil(|py| -> PyResult<PyObject> {
+        vec![
+            HashMap::from([
+                ("name".to_string(), "Terry".into_py_any(py)?),
+                ("id".to_string(), 1_i32.into_py_any(py)?),
+            ]),
+            HashMap::from([
+                ("name".to_string(), "Bina".into_py_any(py)?),
+                ("id".to_string(), 2_i32.into_py_any(py)?),
+            ]),
+        ]
+        .into_py_any(py)
+    })
+}
+
 #[pymodule]
 fn dbcluster(dbcluster_module: &Bound<'_, PyModule>) -> PyResult<()> {
-    dbcluster_module.add_function(wrap_pyfunction!(sql, dbcluster_module)?)
+    dbcluster_module.add_function(wrap_pyfunction!(sql, dbcluster_module)?)?;
+    dbcluster_module.add_function(wrap_pyfunction!(sql_dynamic, dbcluster_module)?)
 }
 
 fn main() -> PyResult<()> {
