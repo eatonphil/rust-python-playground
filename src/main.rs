@@ -1,6 +1,6 @@
 use std::collections::HashMap;
-use std::fs;
 use std::ffi::CString;
+use std::fs;
 
 use pyo3::prelude::*;
 
@@ -11,8 +11,14 @@ fn string_to_c_str(s: &String) -> CString {
 #[pyfunction]
 fn sql(_sql_string: String) -> Vec<HashMap<String, String>> {
     vec![
-	HashMap::from([("name".to_string(), "Terry".to_string()), ("id".to_string(), "1".to_string())]),
-	HashMap::from([("name".to_string(), "Bina".to_string()), ("id".to_string(), "2".to_string())]),
+        HashMap::from([
+            ("name".to_string(), "Terry".to_string()),
+            ("id".to_string(), "1".to_string()),
+        ]),
+        HashMap::from([
+            ("name".to_string(), "Bina".to_string()),
+            ("id".to_string(), "2".to_string()),
+        ]),
     ]
 }
 
@@ -28,23 +34,25 @@ fn main() -> PyResult<()> {
     let test_dir = concat!(env!("CARGO_MANIFEST_DIR"), "/tests");
     let tests = fs::read_dir(test_dir).unwrap();
     for test in tests {
-	let filename = test.unwrap().path().into_os_string().into_string().unwrap();
-	if !filename.ends_with(".py") {
-	    continue;
-	}
+        let filename = test.unwrap().path().into_os_string().into_string().unwrap();
+        if !filename.ends_with(".py") {
+            continue;
+        }
 
-	println!("[STARTED]: {}", filename.clone());
-	let module_name = filename[..(filename.len()-".py".len())].to_string();
-	let source = string_to_c_str(&fs::read_to_string(filename.clone())?);
+        println!("[STARTED]: {}", filename.clone());
+        let module_name = filename[..(filename.len() - ".py".len())].to_string();
+        let source = string_to_c_str(&fs::read_to_string(filename.clone())?);
 
-	Python::with_gil(|py| -> PyResult<()> {
-	    PyModule::from_code(
-		py,
-		&source.as_c_str(),
-		&string_to_c_str(&filename).as_c_str(), &string_to_c_str(&module_name).as_c_str())?;
-	    Ok(())
-	})?;
-	println!("[PASSED]: {}", filename.clone());
+        Python::with_gil(|py| -> PyResult<()> {
+            PyModule::from_code(
+                py,
+                &source.as_c_str(),
+                &string_to_c_str(&filename).as_c_str(),
+                &string_to_c_str(&module_name).as_c_str(),
+            )?;
+            Ok(())
+        })?;
+        println!("[PASSED]: {}", filename.clone());
     }
 
     Ok(())
