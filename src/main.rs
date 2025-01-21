@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::fs;
 use std::ffi::CString;
 
@@ -7,9 +8,23 @@ fn string_to_c_str(s: &String) -> CString {
     CString::new(s.as_str()).unwrap()
 }
 
+#[pyfunction]
+fn sql(_sql_string: String) -> Vec<HashMap<String, String>> {
+    vec![
+	HashMap::from([("name".to_string(), "Terry".to_string()), ("id".to_string(), "1".to_string())]),
+	HashMap::from([("name".to_string(), "Bina".to_string()), ("id".to_string(), "2".to_string())]),
+    ]
+}
+
+#[pymodule]
+fn dbcluster(dbcluster_module: &Bound<'_, PyModule>) -> PyResult<()> {
+    dbcluster_module.add_function(wrap_pyfunction!(sql, dbcluster_module)?)
+}
+
 fn main() -> PyResult<()> {
+    pyo3::append_to_inittab!(dbcluster);
     pyo3::prepare_freethreaded_python();
-    
+
     let test_dir = concat!(env!("CARGO_MANIFEST_DIR"), "/tests");
     let tests = fs::read_dir(test_dir).unwrap();
     for test in tests {
