@@ -1,5 +1,5 @@
 [package]
-name = "rust-python-playground"
+name = "rust-python-test-runner"
 version = "0.1.0"
 edition = "2021"
 
